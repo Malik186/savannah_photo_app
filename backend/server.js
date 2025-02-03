@@ -23,6 +23,9 @@ app.use("/api/albums", albumRoutes);
 const photoRoutes = require("./src/routes/photoRoutes");
 app.use("/api/photos", photoRoutes);
 
+// Comment routes
+const commentRoutes = require("./src/routes/commentRoutes");
+app.use("/api/comments", commentRoutes);
 
 // MongoDB Connection
 mongoose
