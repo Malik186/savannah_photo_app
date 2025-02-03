@@ -27,6 +27,10 @@ app.use("/api/photos", photoRoutes);
 const commentRoutes = require("./src/routes/commentRoutes");
 app.use("/api/comments", commentRoutes);
 
+// Like routes
+const likeRoutes = require("./src/routes/likeRoutes");
+app.use("/api/likes", likeRoutes);
+
 // MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
