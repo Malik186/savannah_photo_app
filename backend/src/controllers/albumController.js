@@ -46,4 +46,48 @@ const getUserAlbums = async (req, res) => {
   }
 };
 
-module.exports = { createAlbum, getAllAlbums, getUserAlbums };
+// @desc Get albums by user ID
+// @route GET /api/albums/user/:id
+// @access Private
+const getAlbumsByUser = async (req, res) => {
+  try {
+    console.log("Fetching albums for user ID:", req.params.id); //Debug Log
+
+    const albums = await Album.find({ user: req.params.id });
+
+    if (!albums || albums.length === 0) {
+      console.log("No albums found for user ID:", req.params.id); //Debug Log
+      return res.status(404).json({ message: "No albums found for this user" });
+    }
+
+    console.log("Albums found:", albums.length); //Debug Log
+    res.json(albums);
+  } catch (error) {
+    console.error("Error fetching albums by user:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// @desc Get an album by ID
+// @route GET /api/albums/:id
+// @access Private (Authenticated Users)
+const getAlbumById = async (req, res) => {
+  try {
+    console.log("Fetching album by ID:", req.params.id); //Debug Log
+
+    const album = await Album.findById(req.params.id).populate("user", "name email");
+
+    if (!album) {
+      console.log("Album not found:", req.params.id); //Debug Log
+      return res.status(404).json({ message: "Album not found" });
+    }
+
+    res.json(album);
+  } catch (error) {
+    console.error("Error fetching album by ID:", error.message);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+module.exports = { createAlbum, getAllAlbums, getUserAlbums, getAlbumsByUser, getAlbumById };
+
