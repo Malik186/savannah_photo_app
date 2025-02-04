@@ -110,7 +110,7 @@ export default function AlbumPage() {
 
             alert("Photo title updated!");
             fetchAlbumData(); // Refresh album list after editing
-            setPhotoTitles({ ...photoTitles, [photoId]: "" }); // ✅ Reset input field
+            setPhotoTitles({ ...photoTitles, [photoId]: "" }); // Reset input field
         } catch (error) {
             alert("Error updating photo title.");
         }
