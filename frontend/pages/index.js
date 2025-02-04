@@ -1,42 +1,38 @@
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import api from "../utils/api";
-import CreateAlbum from "../components/CreateAlbum";
 
 export default function Home() {
-  const [albums, setAlbums] = useState([]);
-
-  const fetchAlbums = async () => {
-    try {
-      const token = JSON.parse(localStorage.getItem("userInfo"))?.token;
-      if (!token) {
-        console.error("No authentication token found.");
-        return;
-      }
-
-      const { data } = await api.get("/albums", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setAlbums(data);
-    } catch (error) {
-      console.error("Error fetching albums", error);
-    }
-  };
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetchAlbums();
+    const fetchUsers = async () => {
+      try {
+        const token = JSON.parse(localStorage.getItem("userInfo"))?.token;
+        if (!token) return;
+
+        const { data } = await api.get("/users", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setUsers(data);
+      } catch (error) {
+        console.error("Error fetching users", error);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold">Albums</h1>
-      <CreateAlbum onAlbumCreated={fetchAlbums} />
+      <h1 className="text-xl font-bold">Users</h1>
       <div className="grid grid-cols-3 gap-4 mt-4">
-        {albums.map((album) => (
-          <Link key={album._id} href={`/album/${album._id}`}>
+        {users.map((user) => (
+          <Link key={user._id} href={`/user/${user._id}`}>
             <div className="p-4 border rounded cursor-pointer hover:shadow-md">
-              <h2 className="text-lg font-semibold">{album.title}</h2>
+              <h2 className="text-lg font-semibold">{user.name}</h2>
+              <p className="text-gray-500">{user.albumsCount} Albums</p>
             </div>
           </Link>
         ))}

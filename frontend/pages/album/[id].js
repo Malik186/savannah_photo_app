@@ -5,36 +5,41 @@ import UploadPhoto from "../../components/UploadPhoto";
 
 export default function AlbumPage() {
     const router = useRouter();
-    const { id } = router.query; // Get album ID from URL
+    const { id } = router.query;
     const [album, setAlbum] = useState(null);
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [photoTitles, setPhotoTitles] = useState({}); // State for photo titles
-    const [commentText, setCommentText] = useState(""); // State for comment input
+    const [photoTitles, setPhotoTitles] = useState({});
+    const [commentText, setCommentText] = useState("");
+    const [currentUser, setCurrentUser] = useState(null);
 
+    // `fetchAlbumData` outside `useEffect`
     const fetchAlbumData = async () => {
         try {
-            const token = JSON.parse(localStorage.getItem("userInfo"))?.token;
+            const tokenData = JSON.parse(localStorage.getItem("userInfo"));
+            const token = tokenData?.token;
             if (!token) {
                 console.error("No authentication token found.");
                 return;
             }
 
-            // Fetch album details
-            const albumRes = await api.get(`/albums/user`, {
+            setCurrentUser(tokenData);
+
+            console.log("Fetching album details from:", `/albums/${id}`);
+
+            const albumRes = await api.get(`/albums/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            // Fetch album photos
             const photosRes = await api.get(`/photos/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            setAlbum(albumRes.data.find((a) => a._id === id));
+            setAlbum(albumRes.data);
             setPhotos(photosRes.data);
             setLoading(false);
         } catch (error) {
-            console.error("Error fetching album", error);
+            console.error("Error fetching album:", error.response?.data || error.message);
         }
     };
 
@@ -72,7 +77,7 @@ export default function AlbumPage() {
             });
 
             alert("Comment Added!");
-            setCommentText(""); // Clear input field
+            setCommentText("");
         } catch (error) {
             alert("Error adding comment.");
         }
@@ -88,7 +93,7 @@ export default function AlbumPage() {
             });
 
             alert("Photo deleted successfully!");
-            fetchAlbumData(); // Refresh album list after deletion
+            fetchAlbumData(); // Call fetchAlbumData after deletion
         } catch (error) {
             alert("Error deleting photo.");
         }
@@ -109,8 +114,8 @@ export default function AlbumPage() {
             });
 
             alert("Photo title updated!");
-            fetchAlbumData(); // Refresh album list after editing
-            setPhotoTitles({ ...photoTitles, [photoId]: "" }); // Reset input field
+            fetchAlbumData(); // Call fetchAlbumData after editing title
+            setPhotoTitles({ ...photoTitles, [photoId]: "" });
         } catch (error) {
             alert("Error updating photo title.");
         }
@@ -123,8 +128,10 @@ export default function AlbumPage() {
         <div className="p-6">
             <h1 className="text-2xl font-bold">{album.title}</h1>
 
-            {/* Upload Photo Component */}
-            <UploadPhoto albumId={id} onPhotoUploaded={fetchAlbumData} />
+            {/* Upload Photo Button Only if logged-in user owns the album */}
+            {currentUser && album.user && currentUser._id === album.user._id && (
+                <UploadPhoto albumId={id} onPhotoUploaded={fetchAlbumData} />
+            )}
 
             <div className="grid grid-cols-3 gap-4 mt-4">
                 {photos.map((photo) => (
@@ -140,34 +147,39 @@ export default function AlbumPage() {
                             ❤️ Like
                         </button>
 
-                        {/* Delete Button */}
-                        <button
-                            onClick={() => handleDelete(photo._id)}
-                            className="bg-red-500 text-white px-4 py-1 rounded mt-2"
-                        >
-                            🗑️ Delete
-                        </button>
+                        {/* Edit/Delete Buttons Only for Album Owner */}
+                        {currentUser && album.user && currentUser._id === album.user._id && (
+                            <>
+                                {/* Delete Button */}
+                                <button
+                                    onClick={() => handleDelete(photo._id)}
+                                    className="bg-red-500 text-white px-4 py-1 rounded mt-2"
+                                >
+                                    🗑️ Delete
+                                </button>
 
-                        {/* Edit Title */}
-                        <div className="mt-2">
-                            <input
-                                type="text"
-                                placeholder="New Title"
-                                className="p-2 border w-full mb-2"
-                                value={photoTitles[photo._id] || ""}
-                                onChange={(e) =>
-                                    setPhotoTitles({ ...photoTitles, [photo._id]: e.target.value })
-                                }
-                            />
-                            <button
-                                onClick={() =>
-                                    handleEditTitle(photo._id, photoTitles[photo._id] || photo.title)
-                                }
-                                className="bg-green-500 text-white px-4 py-1 rounded"
-                            >
-                                ✏️ Edit Title
-                            </button>
-                        </div>
+                                {/* Edit Title */}
+                                <div className="mt-2">
+                                    <input
+                                        type="text"
+                                        placeholder="New Title"
+                                        className="p-2 border w-full mb-2"
+                                        value={photoTitles[photo._id] || ""}
+                                        onChange={(e) =>
+                                            setPhotoTitles({ ...photoTitles, [photo._id]: e.target.value })
+                                        }
+                                    />
+                                    <button
+                                        onClick={() =>
+                                            handleEditTitle(photo._id, photoTitles[photo._id] || photo.title)
+                                        }
+                                        className="bg-green-500 text-white px-4 py-1 rounded"
+                                    >
+                                        ✏️ Edit Title
+                                    </button>
+                                </div>
+                            </>
+                        )}
 
                         {/* Comment Section */}
                         <div className="mt-2">
