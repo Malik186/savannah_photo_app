@@ -15,7 +15,7 @@ const uploadPhoto = async (req, res) => {
       return res.status(400).json({ message: "Title and album ID are required" });
     }
 
-    const imageUrl = req.file.path; // Cloudinary URL
+    const imageUrl = req.file.path; // Get image URL from Cloudinary
 
     const photo = await Photo.create({
       title,
@@ -25,6 +25,7 @@ const uploadPhoto = async (req, res) => {
 
     res.status(201).json(photo);
   } catch (error) {
+    console.error("Photo upload error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -53,6 +54,7 @@ const updatePhotoTitle = async (req, res) => {
     await photo.save();
     res.json(photo);
   } catch (error) {
+    console.error("Update title error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -66,12 +68,13 @@ const deletePhoto = async (req, res) => {
     if (!photo) return res.status(404).json({ message: "Photo not found" });
 
     // Delete from Cloudinary
-    const publicId = photo.imageUrl.split("/").pop().split(".")[0];
+    const publicId = photo.imageUrl.split("/").pop().split(".")[0]; // Extract public ID from URL
     await cloudinary.uploader.destroy(publicId);
 
     await photo.deleteOne();
     res.json({ message: "Photo deleted successfully" });
   } catch (error) {
+    console.error("Delete photo error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

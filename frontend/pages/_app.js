@@ -1,13 +1,34 @@
-import { Provider } from "react-redux";
-import store from "../redux/store";
 import "../styles/globals.css";
+import { useEffect } from "react";
+import { Provider, useSelector } from "react-redux";
+import { useRouter } from "next/router";
+import store from "../store";
+import Navbar from "../components/Navbar"; //Import Navbar
 
-function MyApp({ Component, pageProps }) {
+function AuthGuard({ children }) {
+  const router = useRouter();
+  const userInfo = useSelector((state) => state.auth.userInfo);
+  const authRequired = !["/login", "/register"].includes(router.pathname);
+
+  useEffect(() => {
+    if (authRequired && !userInfo) {
+      router.push("/login"); // Redirect to login if not authenticated
+    }
+  }, [userInfo, authRequired]);
+
+  return children;
+}
+
+export default function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+  const authPages = ["/login", "/register"]; //  login/register pages
+
   return (
     <Provider store={store}>
-      <Component {...pageProps} />
+      {!authPages.includes(router.pathname) && <Navbar />} {/*Shows Navbar only on authenticated pages */}
+      <AuthGuard>
+        <Component {...pageProps} />
+      </AuthGuard>
     </Provider>
   );
 }
-
-export default MyApp;
