@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Provider, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import store from "../store";
+import Navbar from "../components/Navbar"; //Import Navbar
 
 function AuthGuard({ children }) {
   const router = useRouter();
@@ -11,7 +12,7 @@ function AuthGuard({ children }) {
 
   useEffect(() => {
     if (authRequired && !userInfo) {
-      router.push("/login"); //Redirect if user is not authenticated
+      router.push("/login"); // Redirect to login if not authenticated
     }
   }, [userInfo, authRequired]);
 
@@ -19,8 +20,12 @@ function AuthGuard({ children }) {
 }
 
 export default function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+  const authPages = ["/login", "/register"]; //  login/register pages
+
   return (
     <Provider store={store}>
+      {!authPages.includes(router.pathname) && <Navbar />} {/*Shows Navbar only on authenticated pages */}
       <AuthGuard>
         <Component {...pageProps} />
       </AuthGuard>
