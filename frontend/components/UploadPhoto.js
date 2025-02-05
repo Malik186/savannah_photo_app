@@ -1,13 +1,27 @@
 import { useState } from "react";
 import api from "../utils/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Upload, Loader2 } from "lucide-react";
 
 export default function UploadPhoto({ albumId, onPhotoUploaded }) {
   const [title, setTitle] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState(null);
 
   const handleFileChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleUpload = async (e) => {
@@ -54,28 +68,68 @@ export default function UploadPhoto({ albumId, onPhotoUploaded }) {
   };
 
   return (
-    <form onSubmit={handleUpload} className="p-4 border rounded mb-4">
-      <h2 className="text-lg font-bold mb-2">Upload a Photo</h2>
-      <input
-        type="text"
-        placeholder="Photo Title"
-        className="p-2 border w-full mb-2"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <input
-        type="file"
-        className="p-2 border w-full mb-2"
-        onChange={handleFileChange}
-        accept="image/*"
-      />
-      <button
-        type="submit"
-        className="bg-blue-500 text-white p-2 rounded w-full"
-        disabled={loading}
-      >
-        {loading ? "Uploading..." : "Upload Photo"}
-      </button>
-    </form>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="w-5 h-5" />
+          Upload a Photo
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleUpload} className="space-y-4">
+          <div>
+            <Label htmlFor="photo-title">Photo Title</Label>
+            <Input
+              id="photo-title"
+              type="text"
+              placeholder="Enter a title for your photo"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="photo-upload">Choose Photo</Label>
+            <div className="mt-1">
+              <Input
+                id="photo-upload"
+                type="file"
+                onChange={handleFileChange}
+                accept="image/*"
+                className="cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {preview && (
+            <div className="mt-4">
+              <img
+                src={preview}
+                alt="Preview"
+                className="w-full h-48 object-cover rounded-lg"
+              />
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Photo
+              </>
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
