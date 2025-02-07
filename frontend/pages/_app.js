@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Provider, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import store from "../store";
-import Navbar from "../components/Navbar"; // Import Navbar
+import Navbar from "../components/Navbar";
 
 function AuthGuard({ children }) {
   const router = useRouter();
