@@ -1,9 +1,9 @@
 import "../styles/globals.css";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Provider, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import store from "../store";
-import Navbar from "../components/Navbar"; //Import Navbar
+import Navbar from "../components/Navbar";
 
 function AuthGuard({ children }) {
   const router = useRouter();
@@ -14,18 +14,23 @@ function AuthGuard({ children }) {
     if (authRequired && !userInfo) {
       router.push("/login"); // Redirect to login if not authenticated
     }
-  }, [userInfo, authRequired]);
+  }, [userInfo, authRequired, router]);
 
   return children;
 }
 
 export default function MyApp({ Component, pageProps }) {
   const router = useRouter();
-  const authPages = ["/login", "/register"]; //  login/register pages
+  const authPages = ["/login", "/register"]; // login/register pages
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <Provider store={store}>
-      {!authPages.includes(router.pathname) && <Navbar />} {/*Shows Navbar only on authenticated pages */}
+      {mounted && !authPages.includes(router.pathname) && <Navbar />}
       <AuthGuard>
         <Component {...pageProps} />
       </AuthGuard>

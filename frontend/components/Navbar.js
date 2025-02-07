@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
@@ -7,6 +8,11 @@ export default function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
   const userInfo = useSelector((state) => state.auth.userInfo); // Get user info
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     dispatch(logout()); // Clear Redux state
@@ -19,10 +25,17 @@ export default function Navbar() {
         Home
       </Link>
       <div className="flex items-center gap-4">
-        {userInfo && <span className="text-gray-300">Welcome, {userInfo.name}</span>}
-        <button onClick={handleLogout} className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 transition">
-          Logout
-        </button>
+        {mounted && userInfo && (
+          <span className="text-gray-300">Welcome, {userInfo.name}</span>
+        )}
+        {mounted && (
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 transition"
+          >
+            Logout
+          </button>
+        )}
       </div>
     </nav>
   );
